@@ -1,0 +1,442 @@
+/* ============================================================
+   theme.css — тёмная тема «Учёт», общая для всех модулей.
+   Каждый модуль определяет свои дизайн-токены в :root (--bg, --card,
+   --text, --muted, --line, --line-strong, --row-hover, --shadow,
+   --color-brand, --color-primary, --color-primary-hover,
+   --color-primary-light). Этот файл переопределяет их же значениями
+   для тёмной темы внутри [data-theme="dark"] — сами стили модулей
+   (operations-styles.css, report-styles.css и т.д.) не трогаются,
+   так как везде использованы переменные, а не хардкод цветов.
+
+   Подключается ПОСЛЕ стилей модуля, чтобы иметь приоритет каскада
+   при одинаковой специфичности.
+   ============================================================ */
+
+[data-theme="dark"] {
+    --color-brand: #5b8def;
+    --color-primary: #5b8def;
+    --color-primary-hover: #79a3f2;
+    --color-primary-light: rgba(91, 141, 239, 0.18);
+
+    --bg: #1a1e28;
+    --card: #20242f;
+    --text: #e7e9ee;
+    --muted: #9aa1ad;
+    --line: #2a2f3b;
+    --line-strong: #3a4150;
+    --row-hover: #232936;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    --neg: #ef6a6a;
+
+    /* Тёмные значения семантических токенов модулей.
+       --on-primary / --toast-bg / --toast-text наследуются из :root модуля
+       (белый текст на фирменном синем и тёмный тост корректны в обеих темах),
+       поэтому переопределяются только «полки»-шапки и чётные строки. */
+    --surface-2: #232936;            /* приглушённая шапка таблиц/тулбаров */
+    --row-alt: rgba(255, 255, 255, 0.03); /* фон чётных строк */
+    --chip-bg: #2a3040;              /* «фишка» поля в редакторе форм */
+    --chip-locked-bg: #252b38;       /* закреплённая «фишка» поля */
+}
+
+/* Инпуты/селекты в большинстве модулей используют белый фон и тёмный
+   текст напрямую (background:#fff), а не переменную --card — точечно
+   переопределяем здесь, чтобы не трогать сами модули. */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    background: var(--card);
+    color: var(--text);
+}
+[data-theme="dark"] input[readonly] { background: #20242e; color: var(--muted); }
+[data-theme="dark"] select:disabled { background: #20242e; color: #6b7280; }
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder { color: #6b7280; }
+
+/* Кнопки-«призраки» (.btn без .btn-primary) тоже на белом фоне в исходных
+   стилях модулей. */
+[data-theme="dark"] .btn:not(.btn-primary) {
+    background: var(--card); color: var(--text); border-color: var(--line-strong);
+}
+
+/* Сайдбар использует собственный набор переменных (--us-*), не
+   пересекающийся с общими токенами модулей — переопределяем отдельно. */
+[data-theme="dark"] .uchet-sidebar {
+    --us-bg: #14171f;
+    --us-bg-2: #0e1016;
+    --us-text: #9aa1ad;
+    --us-text-strong: #f0f1f4;
+    --us-accent: #5b8def;
+    --us-hover: rgba(91, 141, 239, 0.12);
+    --us-active-bg: rgba(91, 141, 239, 0.18);
+    --us-border: rgba(255, 255, 255, 0.08);
+}
+
+/* Плавный переход при переключении темы. */
+body, .app-header, .uchet-sidebar, input, select, textarea, .btn {
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+/* ---------- Кнопка-переключатель темы (солнце/луна) ----------
+   Размещается рядом с именем пользователя в правом верхнем углу,
+   см. .user-box в каждом модуле. */
+.theme-toggle-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; padding: 0;
+    border: 1px solid var(--line-strong, #d4d8dd);
+    border-radius: 8px;
+    background: var(--card, #fff);
+    color: var(--muted, #666);
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.theme-toggle-btn:hover {
+    color: var(--color-primary, #2855AF);
+    border-color: var(--color-primary, #2855AF);
+}
+.theme-toggle-btn svg { display: block; }
+
+/* ============================================================
+   Дополнительные переопределения для тёмной темы.
+   Покрывают захардкоженные background:#fff в стилях модулей,
+   которые не используют CSS-переменные.
+   ============================================================ */
+
+/* --- Инпуты, селекты, кнопки-призраки (общие для всех модулей) --- */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    background: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--line-strong) !important;
+}
+
+/* --- Кнопки-призраки с background:#fff ---
+   .sap-btn-main больше НЕ патчим: после рефакторинга она использует
+   var(--color-primary), который уже переопределён для тёмной темы выше. */
+[data-theme="dark"] .btn:not(.btn-primary),
+[data-theme="dark"] .sap-btn-secondary {
+    background: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--line-strong) !important;
+}
+[data-theme="dark"] .sap-btn-secondary {
+    background: var(--card) !important;
+    color: var(--text) !important;
+}
+
+/* --- Строки таблицы и карточки (dict-list, report, masterdata) --- */
+[data-theme="dark"] .rep-card,
+[data-theme="dark"] .rep-filter,
+[data-theme="dark"] .op-filter,
+[data-theme="dark"] .op-table-wrap,
+[data-theme="dark"] .fiori-filter-container,
+[data-theme="dark"] .fiori-table-wrap,
+[data-theme="dark"] .main-content {
+    background: var(--card) !important;
+}
+
+/* --- Ячейки таблиц с белым фоном --- */
+[data-theme="dark"] td,
+[data-theme="dark"] th {
+    border-color: var(--line) !important;
+}
+[data-theme="dark"] tbody tr {
+    background: var(--card) !important;
+}
+[data-theme="dark"] tbody tr:hover {
+    background: var(--row-hover) !important;
+}
+
+/* --- dict-list.html специфичные элементы (строка 108, 173) --- */
+[data-theme="dark"] .sap-table tbody tr,
+[data-theme="dark"] .pagination-btn {
+    background: var(--card) !important;
+    color: var(--text) !important;
+}
+
+/* --- Справочники (dict-list): «полки»-шапки тулбара, thead и пагинации.
+   Жёстко (явные hex + !important) перекрываем возможный захардкоженный
+   светлый #fafbfd в старой разметке dict-list.html — чтобы тёмная тема
+   правильно отображалась даже если обновлён ТОЛЬКО этот файл (theme.css).
+   Покрывает: «Все элементы», «Все записи (N)», строку «№ … ▲»,
+   «На странице: …» и нижнюю строку пагинации «0-0 из 0». --- */
+[data-theme="dark"] .fiori-table-toolbar,
+[data-theme="dark"] .fiori-table thead th,
+[data-theme="dark"] .pager {
+    background: #232936 !important;   /* = тёмный --surface-2 */
+    border-color: #2c3342 !important;
+}
+[data-theme="dark"] .fiori-table-toolbar .table-title,
+[data-theme="dark"] .table-title {
+    color: #e7e9ee !important;        /* = тёмный --text */
+}
+[data-theme="dark"] .fiori-table thead th,
+[data-theme="dark"] .pager,
+[data-theme="dark"] .pager label,
+[data-theme="dark"] .pager span {
+    color: #9aa1ad !important;        /* = тёмный --muted */
+}
+
+/* --- masterdata/styles.css строки 133, 150, 410 --- */
+[data-theme="dark"] .detail-section,
+[data-theme="dark"] .form-field input,
+[data-theme="dark"] [style*="panel-bg"] {
+    background: var(--card) !important;
+}
+
+/* --- admin-styles.css: карточки полей редактора форм (строки 117, 125) --- */
+[data-theme="dark"] .field-card,
+[data-theme="dark"] .field-card-inner,
+[data-theme="dark"] .field-menu,
+[data-theme="dark"] .dropdown-menu {
+    background: var(--card) !important;
+    border-color: var(--line-strong) !important;
+    color: var(--text) !important;
+}
+
+/* --- Строка с кнопкой удаления в операциях (red-outline, строка 181) --- */
+[data-theme="dark"] .line-del-btn {
+    background: var(--card) !important;
+    border-color: var(--line-strong) !important;
+}
+
+/* --- home.html: шапка, кнопки, карточки модулей --- */
+[data-theme="dark"] .home-header {
+    background: var(--card) !important;
+    border-color: var(--line) !important;
+}
+[data-theme="dark"] .module-card {
+    background: var(--card) !important;
+    border-color: var(--line) !important;
+}
+[data-theme="dark"] .module-card:hover {
+    border-color: var(--color-primary) !important;
+}
+[data-theme="dark"] .home-btn {
+    background: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--line-strong) !important;
+}
+
+/* --- Тост-уведомления (background:#1e293b захардкожен — переопределять
+       не нужно, он тёмный и так выглядит нормально в обеих темах) --- */
+
+/* --- Строка ошибки в masterdata (background:#fff5f5 строка 445) --- */
+[data-theme="dark"] .error-row,
+[data-theme="dark"] [style*="fff5f5"] {
+    background: rgba(239, 106, 106, 0.12) !important;
+}
+
+/* ============================================================
+   Патч тёмной темы v2 — точечные исправления по всем модулям
+   на основе реальных CSS-селекторов из production-файлов.
+   ============================================================ */
+
+/* --- Чередование строк таблиц (report + operations) ---
+   tr:nth-child(even) захардкожен как #fcfdfe — почти белый */
+[data-theme="dark"] .rep-table tbody tr:nth-child(even),
+[data-theme="dark"] .op-table tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.03) !important;
+}
+[data-theme="dark"] .rep-table tbody tr,
+[data-theme="dark"] .op-table tbody tr {
+    background: var(--card) !important;
+}
+
+/* --- Карточки отчёта (.rep-card) --- */
+[data-theme="dark"] .rep-card {
+    background: var(--card) !important;
+    border-color: var(--line) !important;
+}
+
+/* --- Подвал таблицы операций: фон/границы теперь заданы токенами
+       (--surface-2 / --line) прямо в operations-styles.css, патч не нужен. --- */
+
+/* --- Обёртка таблицы операций --- */
+[data-theme="dark"] .op-table-wrap {
+    background: var(--card) !important;
+    border-color: var(--line) !important;
+}
+
+/* --- dict-list: main-content (строка 108: background:#fff) --- */
+[data-theme="dark"] .main-content {
+    background: var(--bg) !important;
+}
+/* sidebar в dict-list (#1e293b) — в тёмной теме это нормально,
+   но в светлой режиме он должен быть светлым (через --us-bg) */
+[data-theme="dark"] .sidebar {
+    background: var(--us-bg, #14171f) !important;
+}
+
+/* --- Кнопки-призраки в dict-list (sap-btn-secondary, pagination) --- */
+[data-theme="dark"] .sap-btn-secondary,
+[data-theme="dark"] .pagination-btn {
+    background: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--line-strong) !important;
+}
+[data-theme="dark"] .fiori-filter-container {
+    background: var(--card) !important;
+}
+
+/* --- admin: карточки полей (.field-card строка 117, dropdown строка 125) --- */
+[data-theme="dark"] .field-card {
+    background: var(--card) !important;
+    border-color: var(--line-strong) !important;
+}
+[data-theme="dark"] .field-menu {
+    background: var(--card) !important;
+    border-color: var(--line-strong) !important;
+    color: var(--text) !important;
+}
+
+/* --- admin: превью формы --- */
+[data-theme="dark"] .preview {
+    background: var(--card) !important;
+    border-color: var(--line) !important;
+}
+[data-theme="dark"] .preview-head {
+    background: var(--row-hover) !important;
+    border-color: var(--line) !important;
+}
+[data-theme="dark"] .preview-field .box {
+    background: var(--bg) !important;
+    border-color: var(--line-strong) !important;
+}
+[data-theme="dark"] .preview-table td {
+    border-color: var(--line) !important;
+}
+
+/* --- masterdata/styles.css строки 133, 150:
+   .tab-pane и аналоги с background:#fff --- */
+[data-theme="dark"] .tab-pane,
+[data-theme="dark"] .section-card,
+[data-theme="dark"] .detail-screen {
+    background: var(--card) !important;
+}
+
+/* --- form-grid поля (строка 410: background-color: var(--panel-bg, #ffffff)) --- */
+[data-theme="dark"] .form-grid .field input[type="text"],
+[data-theme="dark"] .form-grid .field input[type="date"],
+[data-theme="dark"] .form-grid .field input[type="number"],
+[data-theme="dark"] .form-grid .field select,
+[data-theme="dark"] .form-grid .field textarea {
+    background-color: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--line-strong) !important;
+}
+
+/* --- form-grid невалидные поля (#fff5f5 → тёмный красноватый) --- */
+[data-theme="dark"] .form-grid .field input.invalid,
+[data-theme="dark"] .form-grid .field select.invalid {
+    background-color: rgba(239, 106, 106, 0.10) !important;
+}
+
+/* --- Заголовки report (#1e293b — тёмно-синий, в светлой теме
+       заменяем на брендовый синий) --- */
+.rep-movements-bar {
+    transition: background-color .15s ease;
+}
+
+/* --- Строки group-row и subtotal-row в отчётах --- */
+[data-theme="dark"] .rep-table-moves tbody tr.group-row td {
+    background: var(--row-hover) !important;
+    color: var(--text) !important;
+}
+[data-theme="dark"] .rep-table-moves tbody tr.subtotal-row td {
+    background: rgba(255,255,255,0.05) !important;
+    color: var(--text) !important;
+}
+
+/* --- Кнопка удаления строки в операциях (background:#fff) --- */
+[data-theme="dark"] .line-del-btn,
+[data-theme="dark"] button[data-act="del"] {
+    background: var(--card) !important;
+    border-color: var(--line-strong) !important;
+}
+
+/* --- Общий фикс: любой белый background внутри тёмной темы
+       для элементов без явного класса, через body-потомков --- */
+[data-theme="dark"] .workbench {
+    background: var(--bg) !important;
+}
+/* UCHET-DARK-FIX-APPEND-START  (UCHET-DARK-BUILD: v4-term) */
+/* Все правила ниже — только для тёмной темы, светлую не трогают. */
+
+/* ---- Хаб-страницы: «Справочники», «Статьи доходов и расходов», главная ---- */
+[data-theme="dark"] body { background: #1a1e28; }
+[data-theme="dark"] .home-header { background:#20242f !important; border-color:#2a2f3b !important; }
+[data-theme="dark"] .home-header .breadcrumbs,
+[data-theme="dark"] .home-header .breadcrumbs a,
+[data-theme="dark"] .home-header .user-box { color:#9aa1ad !important; }
+[data-theme="dark"] .home-header .breadcrumbs .current,
+[data-theme="dark"] .home-header .uname { color:#e7e9ee !important; }
+[data-theme="dark"] .home-header .breadcrumbs .sep { color:#3a4150 !important; }
+[data-theme="dark"] .home-header button { background:#20242f !important; color:#e7e9ee !important; border-color:#3a4150 !important; }
+[data-theme="dark"] .home-header button:hover { background:#2a3040 !important; }
+[data-theme="dark"] .home-container h2 { color:#e7e9ee !important; }
+[data-theme="dark"] .home-container .sub,
+[data-theme="dark"] .home-container .back-link,
+[data-theme="dark"] .home-container a { color:#9aa1ad !important; }
+[data-theme="dark"] .nav-card,
+[data-theme="dark"] .module-card { background:#20242f !important; border-color:#2a2f3b !important; }
+[data-theme="dark"] .nav-card:not(.soon):hover,
+[data-theme="dark"] .module-card:hover { border-color:#5b8def !important; }
+[data-theme="dark"] .nav-card .t,
+[data-theme="dark"] .module-card .t { color:#e7e9ee !important; }
+[data-theme="dark"] .nav-card .d,
+[data-theme="dark"] .module-card .d { color:#9aa1ad !important; }
+[data-theme="dark"] .home-btn { background:#20242f !important; color:#e7e9ee !important; border-color:#3a4150 !important; }
+
+/* ---- Операции: шапка «… : строки», заголовки таблицы, подвал «+ Добавить строку» ---- */
+[data-theme="dark"] .op-table-toolbar,
+[data-theme="dark"] .op-table-foot,
+[data-theme="dark"] .op-table thead th { background:#232936 !important; border-color:#2c3342 !important; }
+[data-theme="dark"] .op-table-toolbar .title { color:#e7e9ee !important; }
+[data-theme="dark"] .op-table thead th { color:#9aa1ad !important; }
+
+/* ---- Справочники: тулбар «Все элементы/записи», заголовки, пагинация ---- */
+[data-theme="dark"] .fiori-table-toolbar,
+[data-theme="dark"] .fiori-table thead th,
+[data-theme="dark"] .pager { background:#232936 !important; border-color:#2c3342 !important; }
+[data-theme="dark"] .fiori-table-toolbar .table-title,
+[data-theme="dark"] .table-title { color:#e7e9ee !important; }
+[data-theme="dark"] .fiori-table thead th,
+[data-theme="dark"] .pager,
+[data-theme="dark"] .pager label,
+[data-theme="dark"] .pager span { color:#9aa1ad !important; }
+/* UCHET-DARK-FIX-APPEND-END */
+/* UCHET-DARK-REPORT-START */
+[data-theme="dark"] #cash-table tfoot td {
+    background:#232936 !important; color:#e7e9ee !important; border-top-color:#5b8def !important;
+}
+[data-theme="dark"] #cash-table tfoot td.money.neg { color:#ef6a6a !important; }
+/* UCHET-DARK-REPORT-END */
+/* UCHET-DARK-MISC-START */
+/* Заголовки страниц (.page-title): «Отчёт по движению…», «Дэшборд»,
+   «Редактор форм ввода», «Редактор формы» — были тёмными (#111). */
+[data-theme="dark"] .page-title { color:#e7e9ee !important; }
+
+/* Полоса «Движения за период … Итого» (была светлая #eef1f8). */
+[data-theme="dark"] .rep-movements-bar {
+    background:#232936 !important; color:#9aa1ad !important; border-bottom-color:#2a2f3b !important;
+}
+[data-theme="dark"] .rep-movements-bar .period b,
+[data-theme="dark"] .rep-movements-bar .grand { color:#e7e9ee !important; }
+
+/* «Фишки» полей в редакторе форм: закреплённые оставались белыми (#eef0f4). */
+[data-theme="dark"] .chip { background:#2a3040 !important; }
+[data-theme="dark"] .chip.locked { background:#252b38 !important; }
+[data-theme="dark"] .chip .chip-label { color:#e7e9ee !important; }
+[data-theme="dark"] .chip.locked .chip-label { color:#9aa1ad !important; }
+/* UCHET-DARK-MISC-END */
+/* UCHET-DARK-OPZEBRA-START */
+/* Заметная зебра в таблице операций (тёмная тема). Чётные строки чуть светлее
+   фона карточки; нечётные — на фоне --card (см. патч выше). Отчётов не касается. */
+[data-theme="dark"] .op-table tbody tr:nth-child(even) { background: rgba(255,255,255,0.055) !important; }
+/* UCHET-DARK-OPZEBRA-END */

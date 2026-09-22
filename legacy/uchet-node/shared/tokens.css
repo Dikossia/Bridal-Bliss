@@ -1,0 +1,56 @@
+/* shared/tokens.css — ЕДИНЫЙ источник дизайн-токенов «Учёт».
+   Подключать ПЕРЕД модульным CSS:
+     <link rel="stylesheet" href="/shared/tokens.css">
+     <link rel="stylesheet" href="/<модуль>-styles.css">
+     <link rel="stylesheet" href="/shared/theme.css">
+   Светлые значения — в :root, тёмные — в [data-theme="dark"]. */
+:root {
+    --color-brand: #2855AF;
+    --color-primary: #2855AF;
+    --color-primary-hover: #224894;
+    --color-primary-light: rgba(40, 85, 175, 0.12);
+
+    --bg: #fafbfc;
+    --card: #fff;
+    --text: #222;
+    --muted: #666;
+    --line: #e3e7ee;
+    --line-strong: #d4d8dd;
+    --row-hover: #f6f8fc;
+    --row-selected: var(--color-primary-light);
+
+    --on-primary: #fff;
+    --surface-2: #fafbfd;
+    --row-alt: #fcfdfe;
+    --neg: #c0392b;
+    --chip-bg: #f3f6fb;
+    --chip-locked-bg: #eef0f4;
+    --toast-bg: #1e293b;
+    --toast-text: #fff;
+
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --radius: 12px;
+    --radius-sm: 6px;
+}
+[data-theme="dark"] {
+    --color-brand: #5b8def;
+    --color-primary: #5b8def;
+    --color-primary-hover: #79a3f2;
+    --color-primary-light: rgba(91, 141, 239, 0.18);
+
+    --bg: #1a1e28;
+    --card: #20242f;
+    --text: #e7e9ee;
+    --muted: #9aa1ad;
+    --line: #2a2f3b;
+    --line-strong: #3a4150;
+    --row-hover: #232936;
+
+    --surface-2: #232936;
+    --row-alt: rgba(255, 255, 255, 0.03);
+    --neg: #ef6a6a;
+    --chip-bg: #2a3040;
+    --chip-locked-bg: #252b38;
+
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}

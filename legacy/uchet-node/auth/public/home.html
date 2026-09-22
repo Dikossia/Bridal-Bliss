@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- Применяем сохранённую тему ДО первой отрисовки, чтобы не было
+         мигания светлой темой перед переключением на тёмную. -->
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('uchet.theme.v1');
+          if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учёт — Главная</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body { display: block; align-items: initial; justify-content: initial; padding: 0; background: var(--bg); color: var(--text); }
+        .home-header {
+            background: var(--card); border-bottom: 1px solid var(--line); height: 56px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+        }
+        .home-header .logo { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--color-brand); font-weight: 700; font-size: 21px; }
+        .home-header .user-box { display: flex; align-items: center; gap: 14px; font-size: 14px; color: var(--muted); }
+        .home-header .uname { color: var(--text); font-weight: 500; }
+        .home-header button {
+            border: 1px solid var(--line-strong); background: var(--card); color: var(--text);
+            padding: 7px 12px; border-radius: 6px; font-size: 13px; cursor: pointer;
+            transition: background .15s, border-color .15s;
+        }
+        .home-header button:hover { background: var(--row-hover); }
+        .home-container { max-width: 1000px; margin: 48px auto; padding: 0 24px; }
+        .home-container h2 { font-size: 26px; color: var(--text); margin-bottom: 8px; font-weight: 600; }
+        .home-container .sub { color: var(--muted); margin-bottom: 36px; font-size: 15px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
+        .nav-card {
+            background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 28px 24px;
+            cursor: pointer; position: relative; transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+        .nav-card:not(.soon):hover { transform: translateY(-3px); border-color: var(--color-brand); box-shadow: 0 8px 28px rgba(0,0,0,.07); }
+        .nav-card .ic { font-size: 36px; display: block; margin-bottom: 18px; }
+        .nav-card .t { font-size: 19px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+        .nav-card .d { font-size: 14px; color: var(--muted); line-height: 1.45; }
+        .nav-card.soon { opacity: .6; cursor: default; }
+        .nav-card.soon .badge {
+            position: absolute; top: 16px; right: 16px; font-size: 11px; font-weight: 600;
+            background: var(--row-hover); color: var(--muted); padding: 3px 9px; border-radius: 20px; letter-spacing: .02em;
+        }
+    </style>
+    <link rel="stylesheet" href="/shared/sidebar.css">
+    <link rel="stylesheet" href="/shared/theme.css">
+</head>
+<body onload="init()">
+<div class="uchet-shell">
+  <aside id="uchet-sidebar"></aside>
+  <div class="uchet-content">
+
+<header class="home-header">
+    <div class="logo">Учёт</div>
+    <div class="user-box">
+        <span id="theme-toggle-slot"></span>
+        <span class="uname" id="user-name">Загрузка...</span>
+        <button id="logout-btn">Выйти</button>
+    </div>
+</header>
+
+<main class="home-container">
+    <h2 id="greeting">Добро пожаловать!</h2>
+    <div class="sub">Выберите необходимый раздел для работы с системой:</div>
+
+    <div class="nav-grid">
+        <div class="nav-card" onclick="window.location.href='/dictionaries'">
+            <span class="ic">📚</span>
+            <div class="t">Справочники</div>
+            <div class="d">Мастер-данные: компании, контрагенты, объекты, договоры, статьи доходов и категории расходов</div>
+        </div>
+
+        <div class="nav-card" onclick="window.location.href='/operations'">
+            <span class="ic">🧾</span>
+            <div class="t">Операции</div>
+            <div class="d">Ввод операций по доходам и расходам: документ с шапкой и строками со связями на справочники</div>
+        </div>
+
+        <div class="nav-card" onclick="window.location.href='/report'">
+            <span class="ic">📊</span>
+            <div class="t">Отчёты</div>
+            <div class="d">Отчёт по движению денежных средств: касса по всем компаниям и движения за период в разрезе компаний</div>
+        </div>
+        <div class="nav-card" onclick="window.location.href='/admin'">
+            <span class="ic">⚙️</span>
+            <div class="t">Администрирование</div>
+            <div class="d">Роли и полномочия, построитель справочников, редактор форм ввода</div>
+        </div>
+    </div>
+</main>
+  </div>
+</div>
+
+<script>
+const AuthState = { accessToken: null };
+
+async function init() {
+    let ok = false;
+    try {
+        const r = await fetch('/api/refresh', { method: 'POST' });
+        if (r.ok) { AuthState.accessToken = (await r.json()).accessToken; ok = true; }
+    } catch {}
+    if (!ok) { window.location.href = '/login'; return; }
+
+    try {
+        const p = JSON.parse(atob(AuthState.accessToken.split('.')[1]));
+        const name = p.name || p.email || '';
+        document.getElementById('user-name').textContent = name;
+        document.getElementById('greeting').textContent = name ? `Добро пожаловать, ${name}!` : 'Добро пожаловать!';
+    } catch {}
+}
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    try { await fetch('/api/logout', { method: 'POST' }); } catch {}
+    window.location.href = '/login';
+});
+</script>
+<script type="module">
+  import { Theme } from '/shared/theme.js';
+  import { Sidebar } from '/shared/sidebar.js';
+  Theme.mountToggle('#theme-toggle-slot');
+  Sidebar.mount('#uchet-sidebar', { active: '' });
+</script>
+</body>
+</html>

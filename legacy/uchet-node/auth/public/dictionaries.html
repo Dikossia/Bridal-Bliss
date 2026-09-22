@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- Применяем сохранённую тему ДО первой отрисовки, чтобы не было
+         мигания светлой темой перед переключением на тёмную. -->
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('uchet.theme.v1');
+          if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учёт — Справочники</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body { display: block; align-items: initial; justify-content: initial; padding: 0; }
+        .home-header {
+            background: #fff; border-bottom: 1px solid #e3e7ee; height: 56px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+        }
+        .home-header .breadcrumbs { display: flex; align-items: center; gap: 6px; font-size: 15px; color: #666; }
+        .home-header .breadcrumbs .logo { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--color-brand); font-weight: 700; font-size: 19px; }
+        .home-header .breadcrumbs a { color: #666; text-decoration: none; }
+        .home-header .breadcrumbs a:hover { color: var(--color-primary); }
+        .home-header .breadcrumbs .sep { color: #d4d8dd; }
+        .home-header .breadcrumbs .current { color: #222; font-weight: 600; }
+        .home-header .user-box { display: flex; align-items: center; gap: 14px; font-size: 14px; color: #666; }
+        .home-header .uname { color: #222; font-weight: 500; }
+        .home-header button {
+            border: 1px solid #d4d8dd; background: #fff; color: #222;
+            padding: 7px 12px; border-radius: 6px; font-size: 13px; cursor: pointer;
+        }
+        .home-header button:hover { background: #f5f7fa; }
+        .home-container { max-width: 1100px; margin: 40px auto; padding: 0 24px; }
+        .home-container h2 { font-size: 24px; color: #111; margin-bottom: 8px; font-weight: 600; }
+        .home-container .sub { color: #666; margin-bottom: 32px; font-size: 15px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .nav-card {
+            background: #fff; border: 1px solid #e3e7ee; border-radius: 8px; padding: 24px;
+            cursor: pointer; position: relative; transition: transform 0.15s, border-color 0.15s;
+        }
+        .nav-card:not(.soon):hover { transform: translateY(-2px); border-color: var(--color-brand); }
+        .nav-card .ic { font-size: 32px; display: block; margin-bottom: 16px; }
+        .nav-card .t { font-size: 18px; font-weight: 600; color: #111; margin-bottom: 6px; }
+        .nav-card .d { font-size: 14px; color: #666; line-height: 1.4; }
+    </style>
+    <link rel="stylesheet" href="/shared/sidebar.css">
+    <link rel="stylesheet" href="/shared/theme.css">
+</head>
+<body onload="init()">
+<div class="uchet-shell">
+  <aside id="uchet-sidebar"></aside>
+  <div class="uchet-content">
+
+<header class="home-header">
+    <div class="breadcrumbs">
+        <a class="logo" href="/home">Учёт</a>
+        <span class="sep">/</span>
+        <span class="current">Справочники</span>
+    </div>
+    <div class="user-box">
+        <span id="theme-toggle-slot"></span>
+        <span class="uname" id="user-name">Загрузка...</span>
+        <button id="logout-btn">Выйти</button>
+    </div>
+</header>
+
+<main class="home-container">
+    <h2>Справочники</h2>
+    <div class="sub">Выберите справочник для ведения мастер-данных системы:</div>
+
+    <div class="nav-grid">
+        <div class="nav-card" onclick="window.location.href='/income-expense.html'">
+            <span class="ic">💰</span>
+            <div class="t">Статьи доходов и расходов</div>
+            <div class="d">Справочники статей доходов и категорий расходов</div>
+        </div>
+
+        <div class="nav-card" onclick="window.location.href='/dict/companies'">
+            <span class="ic">💼</span>
+            <div class="t">Компании</div>
+            <div class="d">Список компаний и их обслуживающих банков</div>
+        </div>
+
+        <div class="nav-card" onclick="window.location.href='/dict/counterparties'">
+            <span class="ic">👥</span>
+            <div class="t">Контрагенты</div>
+            <div class="d">Справочник поставщиков, покупателей и партнеров компании</div>
+        </div>
+
+        <div class="nav-card" onclick="window.location.href='/dict/objects'">
+            <span class="ic">🏢</span>
+            <div class="t">Объекты</div>
+            <div class="d">Справочник торговых точек, складов, офисов и филиалов компании</div>
+        </div>
+
+        <div class="nav-card" onclick="window.location.href='/dict/contracts'">
+            <span class="ic">📝</span>
+            <div class="t">Договоры</div>
+            <div class="d">Реестр договоров с клиентами: номер, контрагент и дата</div>
+        </div>
+    </div>
+</main>
+  </div>
+</div>
+
+<script>
+const AuthState = { accessToken: null };
+
+async function init() {
+    let ok = false;
+    try {
+        const r = await fetch('/api/refresh', { method: 'POST' });
+        if (r.ok) { AuthState.accessToken = (await r.json()).accessToken; ok = true; }
+    } catch {}
+    if (!ok) { window.location.href = '/login'; return; }
+
+    try {
+        const p = JSON.parse(atob(AuthState.accessToken.split('.')[1]));
+        document.getElementById('user-name').textContent = p.name || p.email || '';
+    } catch {}
+}
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    try { await fetch('/api/logout', { method: 'POST' }); } catch {}
+    window.location.href = '/login';
+});
+</script>
+<script type="module">
+  import { Theme } from '/shared/theme.js';
+  import { Sidebar } from '/shared/sidebar.js';
+  Theme.mountToggle('#theme-toggle-slot');
+  Sidebar.mount('#uchet-sidebar', { active: 'dictionaries' });
+</script>
+</body>
+</html>

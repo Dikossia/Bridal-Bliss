@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — Учёт</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="card">
+    <div class="brand">
+        <h1>Учёт</h1>
+        <p>Система учёта товаров и продаж</p>
+    </div>
+
+    <h2>Регистрация</h2>
+    <p class="subtitle">После регистрации мы отправим вам письмо со ссылкой для установки пароля.</p>
+
+    <div id="alert"></div>
+
+    <form id="form" novalidate>
+        <div class="field">
+            <label for="email">Электронная почта *</label>
+            <input id="email" type="email" name="email" autocomplete="email" required>
+            <div class="error-text" id="err-email"></div>
+        </div>
+
+        <div class="field">
+            <label for="name">Ваше имя *</label>
+            <input id="name" type="text" name="name" autocomplete="name" required>
+            <div class="error-text" id="err-name"></div>
+        </div>
+
+        <div class="field">
+            <label for="phone">Телефон *</label>
+            <input id="phone" type="tel" name="phone" autocomplete="tel" placeholder="+7 (___) ___-__-__" required>
+            <div class="error-text" id="err-phone"></div>
+        </div>
+
+        <button class="primary" type="submit" id="submit">Зарегистрироваться</button>
+    </form>
+
+    <div class="link-row">
+        У меня уже есть аккаунт — <a href="/login">войти</a>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const form = $('form'), alertBox = $('alert'), submitBtn = $('submit');
+
+const EMAIL_RE = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+
+// Простая маска телефона +7 (XXX) XXX-XX-XX
+$('phone').addEventListener('input', e => {
+    let d = e.target.value.replace(/\D/g, '');
+    if (d.startsWith('8')) d = '7' + d.slice(1);
+    if (!d.startsWith('7')) d = '7' + d;
+    d = d.slice(0, 11);
+    let out = '+7';
+    if (d.length > 1) out += ' (' + d.slice(1, 4);
+    if (d.length >= 5) out += ') ' + d.slice(4, 7);
+    if (d.length >= 8) out += '-' + d.slice(7, 9);
+    if (d.length >= 10) out += '-' + d.slice(9, 11);
+    e.target.value = out;
+});
+
+function setError(field, msg) {
+    $('err-' + field).textContent = msg || '';
+    $(field).classList.toggle('invalid', !!msg);
+}
+
+function showAlert(type, msg) {
+    alertBox.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+}
+
+function clearErrors() {
+    ['email','name','phone'].forEach(f => setError(f, ''));
+    alertBox.innerHTML = '';
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearErrors();
+
+    const email = $('email').value.trim().toLowerCase();
+    const name  = $('name').value.trim();
+    const phone = $('phone').value.trim();
+
+    let bad = false;
+    if (!EMAIL_RE.test(email)) { setError('email', 'Введите корректный email'); bad = true; }
+    if (name.length < 2)       { setError('name',  'Введите ваше имя'); bad = true; }
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length < 10)    { setError('phone', 'Введите корректный номер телефона'); bad = true; }
+    if (bad) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Отправка...';
+
+    try {
+        const r = await fetch('/api/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email, name, phone })
+        });
+        const data = await r.json();
+
+        if (data.ok) {
+            // Показываем экран успеха
+            document.querySelector('.card').innerHTML = `
+                <div class="brand"><h1>Учёт</h1></div>
+                <div class="success-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <h2 class="center">Спасибо за регистрацию!</h2>
+                <p class="center" style="color:#666">
+                    Мы отправили на <b>${email}</b> письмо со ссылкой для установки пароля.
+                    Проверьте также папку «Спам». Ссылка действительна 24&nbsp;часа.
+                </p>
+                <div class="link-row"><a href="/login">Вернуться на страницу входа</a></div>`;
+        } else {
+            showAlert('error', data.error || 'Ошибка регистрации');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Зарегистрироваться';
+        }
+    } catch (err) {
+        showAlert('error', 'Сетевая ошибка. Попробуйте ещё раз.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Зарегистрироваться';
+    }
+});
+</script>
+</body>
+</html>

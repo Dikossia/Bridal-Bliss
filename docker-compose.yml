@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dress-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dress-net
+    # Порт наружу НЕ публикуется — доступ только из сети dress-net (см. deploy-guide.md, шаг 2).
+
+  backend:
+    build: .
+    container_name: dress-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    volumes:
+      - media_data:/app/media
+    networks:
+      - dress-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: dress-nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      # - "443:443"   # раскомментировать на шаге 9.5 deploy-guide.md
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - media_data:/media:ro
+      # - certbot_certs:/etc/letsencrypt:ro   # добавить на шаге 9.3
+      # - certbot_www:/var/www/certbot        # добавить на шаге 9.3
+    networks:
+      - dress-net
+
+networks:
+  dress-net:
+    name: dress-net
+
+volumes:
+  postgres_data:
+  media_data:

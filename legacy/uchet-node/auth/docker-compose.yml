@@ -1,0 +1,21 @@
+services:
+  uchet-auth:
+    build: .
+    container_name: uchet-auth
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .env
+    networks:
+      - uchet-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  uchet-net:
+    external: true
+    name: uchet-app_default

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — Учёт</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body onload="checkAuthOnLoad()">
+<div id="app-container">
+    <div class="card">
+        <div class="brand">
+            <h1>Учёт</h1>
+            <p>Система учёта товаров и продаж</p>
+        </div>
+
+        <h2>Вход</h2>
+
+        <div id="alert-container" class="alert" style="display: none; background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; border: 1px solid #f5c6cb;"></div>
+
+        <form id="form">
+            <div class="field">
+                <label for="email">Электронная почта</label>
+                <input id="email" type="email" autocomplete="email" required placeholder="example@gmail.com">
+            </div>
+
+            <div class="field">
+                <label for="password">Пароль</label>
+                <div class="password-wrap">
+                    <input id="password" type="password" autocomplete="current-password" required placeholder="••••••••">
+                    <button type="button" class="toggle-pwd" id="toggle-pwd-btn">Показать</button>
+                </div>
+            </div>
+
+            <button class="primary" type="submit" id="submit-btn">Войти</button>
+        </form>
+
+        <div class="link-row">
+            <a href="/forgot-password">Забыли пароль?</a>
+        </div>
+        <div class="link-row">
+            Нет аккаунта? <a href="/register">Регистрация</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const AuthState = { accessToken: null, user: null };
+
+    const form = document.getElementById('form');
+    const submitBtn = document.getElementById('submit-btn');
+    const alertContainer = document.getElementById('alert-container');
+    const passwordInput = document.getElementById('password');
+    const togglePwdBtn = document.getElementById('toggle-pwd-btn');
+
+    // Переключение видимости пароля
+    togglePwdBtn.addEventListener('click', () => {
+        const isText = passwordInput.type === 'text';
+        passwordInput.type = isText ? 'password' : 'text';
+        togglePwdBtn.textContent = isText ? 'Показать' : 'Скрыть';
+    });
+
+    function showError(message) {
+        alertContainer.textContent = message;
+        alertContainer.style.display = 'block';
+    }
+
+    function hideError() {
+        alertContainer.style.display = 'none';
+    }
+
+    /**
+     * Автоматическая проверка при входе на страницу:
+     * Если у пользователя есть живая сессия (refresh-кука), сразу шлем его на /home
+     */
+    async function checkAuthOnLoad() {
+        try {
+            const r = await fetch('/api/refresh', { method: 'POST' });
+            if (r.ok) {
+                // Сессия активна! Не показываем форму, улетаем на главную
+                window.location.href = '/home';
+            }
+        } catch (e) {
+            console.error('Ошибка проверки сессии:', e);
+        }
+    }
+
+    // Обработка отправки формы логина
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideError();
+
+        const email = document.getElementById('email').value.trim();
+        const password = passwordInput.value;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Вход...';
+
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Неверный email или пароль');
+            }
+
+            // Токен получен, кука проставилась — редиректим на полноценную домашнюю страницу
+            window.location.href = '/home';
+
+        } catch (err) {
+            showError(err.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Войти';
+        }
+    });
+</script>
+</body>
+</html>

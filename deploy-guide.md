@@ -389,16 +389,21 @@ crontab -e
 docker compose exec -T postgres pg_dump -U dress_app dress_db > backup_$(date +%F).sql
 ```
 
-**Автоматический бэкап раз в сутки через cron:**
+**Автоматический бэкап раз в сутки через cron** — база и фото мастер-данных,
+хранение 30 дней (скрипт `scripts/backup.sh`):
 
 ```bash
 mkdir -p /home/ubuntu/backups
+chmod +x /home/ubuntu/dress-rental/scripts/backup.sh
 crontab -e
 ```
 
 ```cron
-0 2 * * * cd /home/ubuntu/dress-rental && docker compose exec -T postgres pg_dump -U dress_app dress_db > /home/ubuntu/backups/dress_$(date +\%F).sql
+0 2 * * * /home/ubuntu/dress-rental/scripts/backup.sh >> /home/ubuntu/backups/backup.log 2>&1
 ```
+
+> Ключ `MD_FIELD_ENCRYPTION_KEY` из `.env` храните отдельно от бэкапов (например, в менеджере
+> паролей владельца): без него ИИН и номера документов клиентов из бэкапа не прочитать.
 
 > Раз в неделю копируйте папку `backups/` куда-то ВНЕ сервера
 > (свой компьютер, облако). Бэкап на том же сервере не спасёт при его потере.

@@ -17,18 +17,18 @@
 
 export const NAV = [
   {
-    key: 'dictionaries',
-    label: 'Справочники',
-    href: '/dictionaries',
+    key: 'masterdata',
+    label: 'Мастер-данные',
+    href: '/md',
     icon: '📚',
     children: [
-      { key: 'dict:income_items',   label: 'Статьи доходов',    href: '/dict/income_items' },
-      { key: 'dict:expense_items',  label: 'Категории расходов', href: '/dict/expense_items' },
-      { key: 'dict:expense_types',  label: 'Виды расходов',      href: '/dict/expense_types' },
-      { key: 'dict:companies',      label: 'Компании',           href: '/dict/companies' },
-      { key: 'dict:counterparties', label: 'Контрагенты',        href: '/dict/counterparties' },
-      { key: 'dict:objects',        label: 'Объекты',            href: '/dict/objects' },
-      { key: 'dict:contracts',      label: 'Договоры',           href: '/dict/contracts' },
+      { key: 'md:models',         label: 'Модели',            href: '/md#/d/models' },
+      { key: 'md:items',          label: 'Экземпляры',        href: '/md#/d/items' },
+      { key: 'md:kits',           label: 'Комплекты',         href: '/md#/d/kits' },
+      { key: 'md:clients',        label: 'Клиенты',           href: '/md#/d/clients' },
+      { key: 'md:counterparties', label: 'Контрагенты',       href: '/md#/d/counterparties' },
+      { key: 'md:accounts',       label: 'Счета',             href: '/md#/d/accounts' },
+      { key: 'md:import',         label: 'Импорт',            href: '/md#/import' },
     ],
   },
   {
@@ -50,7 +50,7 @@ export const NAV = [
     icon: '⚙️',
     children: [
       { key: 'admin:roles',        label: 'Роли и полномочия',        href: '/admin/roles' },
-      { key: 'admin:dict-builder', label: 'Построитель справочников',  href: '/admin/dict-builder' },
+      { key: 'admin:dict-builder', label: 'Конструктор справочников', href: '/md#/builder' },
       { key: 'admin:forms',        label: 'Редактор форм ввода',       href: '/admin/forms' },
     ],
   },

@@ -13,18 +13,49 @@ services:
       - dress-net
     # Порт наружу НЕ публикуется — доступ только из сети dress-net (см. deploy-guide.md, шаг 2).
 
+  redis:
+    image: redis:7-alpine
+    container_name: dress-redis
+    restart: unless-stopped
+    networks:
+      - dress-net
+    # Порт наружу не публикуется: очередь фоновых задач доступна только backend/worker.
+
   backend:
     build: .
     container_name: dress-backend
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
     depends_on:
       - postgres
+      - redis
     volumes:
       - media_data:/app/media
     networks:
       - dress-net
+
+  # Фоновые задачи модуля «Мастер-данные» (долгий импорт, МД-35)
+  worker:
+    build: .
+    container_name: dress-worker
+    restart: unless-stopped
+    command: ["celery", "-A", "config", "worker", "-l", "info", "--concurrency", "2"]
+    env_file:
+      - .env
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - media_data:/app/media
+    networks:
+      - dress-net
+    healthcheck:
+      disable: true
 
   nginx:
     image: nginx:alpine

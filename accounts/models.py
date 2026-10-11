@@ -105,3 +105,72 @@ class RateLimitHit(models.Model):
 
     class Meta:
         db_table = 'rate_limit_hits'
+
+
+# ============================================================
+# Организации и роли (нужны модулю «Мастер-данные», ТЗ §1 и §6).
+# Каждая запись мастер-данных принадлежит организации (салону/сети
+# салонов). Пользователь состоит в организации с одной из ролей.
+# ============================================================
+import uuid  # noqa: E402
+
+
+class Organization(models.Model):
+    """Организация (салон или сеть бутиков). Данные разных организаций
+    полностью изолированы по organization_id (ТЗ §6)."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField('Название', max_length=200)
+    # Настройки организации: включённые разделы (МД-6) и т.п.
+    # {"sections": {"uzatu": true, "shoes": false}}
+    settings = models.JSONField('Настройки', default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'organizations'
+        verbose_name = 'Организация'
+        verbose_name_plural = 'Организации'
+
+    def __str__(self):
+        return self.name
+
+    # ---- Разделы (МД-6) ----
+    DEFAULT_SECTIONS = {'uzatu': True, 'shoes': False}
+
+    def sections(self):
+        s = dict(self.DEFAULT_SECTIONS)
+        s.update((self.settings or {}).get('sections') or {})
+        return s
+
+    def section_enabled(self, key):
+        if not key:
+            return True
+        return bool(self.sections().get(key, True))
+
+
+class Membership(models.Model):
+    """Пользователь в организации с ролью (ТЗ §6)."""
+    ROLE_OWNER = 'owner'
+    ROLE_ADMIN = 'admin'
+    ROLE_SELLER = 'seller'
+    ROLE_ACCOUNTANT = 'accountant'
+    ROLE_CHOICES = [
+        (ROLE_OWNER, 'Владелец'),
+        (ROLE_ADMIN, 'Администратор'),
+        (ROLE_SELLER, 'Продавец'),
+        (ROLE_ACCOUNTANT, 'Бухгалтер'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='memberships')
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='memberships')
+    role = models.CharField('Роль', max_length=20, choices=ROLE_CHOICES, default=ROLE_SELLER)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'organization_memberships'
+        unique_together = [('user', 'organization')]
+        verbose_name = 'Участник организации'
+        verbose_name_plural = 'Участники организаций'
+
+    def __str__(self):
+        return f'{self.user} — {self.organization} ({self.get_role_display()})'

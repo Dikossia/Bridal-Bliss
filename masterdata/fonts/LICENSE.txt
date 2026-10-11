@@ -1,0 +1,3 @@
+DejaVu Fonts — свободная лицензия (Bitstream Vera / Arev, public domain changes).
+https://dejavu-fonts.github.io/License.html
+Используются для печати ярлыков (кириллица и казахские буквы).

@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'accounts',
+    'masterdata',
 ]
 
 MIDDLEWARE = [
@@ -158,3 +160,58 @@ DEFAULT_FROM_EMAIL = os.environ.get('SMTP_FROM', 'no-reply@platya.kz')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
+
+
+# ------------------- Модуль «Мастер-данные» -------------------
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ['masterdata.api.auth.JWTAuthentication'],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
+    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
+    'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser',
+                               'rest_framework.parsers.MultiPartParser',
+                               'rest_framework.parsers.FormParser'],
+    'EXCEPTION_HANDLER': 'masterdata.api.errors.exception_handler',
+    'UNAUTHENTICATED_USER': None,
+    'COERCE_DECIMAL_TO_STRING': False,
+    'URL_FORMAT_OVERRIDE': None,  # ?format=xlsx|csv — параметр экспорта, а не DRF
+}
+
+# Ключ шифрования ПДн (Fernet). Сгенерировать:
+#   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+MD_FIELD_ENCRYPTION_KEY = os.environ.get('MD_FIELD_ENCRYPTION_KEY', '')
+
+MD_PHOTO_MAX_BYTES = 15 * 1024 * 1024          # МД-19: до 15 МБ на файл
+MD_IMPORT_MAX_ROWS = 10000                     # МД-26: до 10 000 строк за раз
+MD_IMPORT_BACKGROUND_ROWS = int(os.environ.get('MD_IMPORT_BACKGROUND_ROWS', '300'))  # МД-35
+MD_SIGNED_URL_TTL = int(os.environ.get('MD_SIGNED_URL_TTL', '3600'))   # ссылки на фото, сек
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+
+# Фоновые задачи (МД-35): Celery + Redis, если задан CELERY_BROKER_URL;
+# иначе импорт выполняется в фоновом потоке процесса gunicorn.
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', '')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', '') or None
+CELERY_TASK_ALWAYS_EAGER = env_bool('CELERY_TASK_ALWAYS_EAGER', False)
+MD_TASKS_SYNC = env_bool('MD_TASKS_SYNC', False)   # для тестов: выполнять задачи сразу
+
+# S3-совместимое хранилище фото (§8): включается, если задан AWS_STORAGE_BUCKET_NAME
+# (нужен пакет django-storages[s3]). Ссылки — подписанные, с ограниченным сроком.
+if os.environ.get('AWS_STORAGE_BUCKET_NAME'):
+    STORAGES['default'] = {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            'bucket_name': os.environ['AWS_STORAGE_BUCKET_NAME'],
+            'endpoint_url': os.environ.get('AWS_S3_ENDPOINT_URL') or None,
+            'region_name': os.environ.get('AWS_S3_REGION_NAME') or None,
+            'querystring_auth': True,
+            'querystring_expire': MD_SIGNED_URL_TTL,
+            'default_acl': 'private',
+            'file_overwrite': False,
+        },
+    }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'loggers': {'masterdata': {'handlers': ['console'], 'level': 'INFO'}},
+}

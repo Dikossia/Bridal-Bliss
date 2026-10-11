@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('uchet.theme.v1');
+          if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мастер-данные</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/shared/tokens.css">
+    <link rel="stylesheet" href="/md-assets/md.css">
+    <link rel="stylesheet" href="/shared/sidebar.css">
+    <link rel="stylesheet" href="/shared/theme.css">
+</head>
+<body>
+<div class="uchet-shell">
+  <aside id="uchet-sidebar"></aside>
+  <div class="uchet-content">
+    <header class="md-header">
+      <button class="md-icon-btn md-only-mobile" id="md-nav-toggle" aria-label="Меню справочников">☰</button>
+      <a class="md-logo" href="#/">Мастер-данные</a>
+      <div class="md-search">
+        <input id="md-search" type="search" autocomplete="off"
+               placeholder="Артикул, бирка, наименование, телефон, ИИН…" aria-label="Поиск">
+        <div class="md-search-results" id="md-search-results" hidden></div>
+      </div>
+      <div class="md-user">
+        <span id="theme-toggle-slot"></span>
+        <span class="md-user-name" id="md-user"></span>
+        <button class="md-btn md-btn-ghost md-btn-sm" id="md-logout">Выйти</button>
+      </div>
+    </header>
+    <div class="md-body">
+      <nav class="md-nav" id="md-nav" aria-label="Справочники"></nav>
+      <div class="md-nav-backdrop" id="md-nav-backdrop"></div>
+      <main class="md-main" id="md-main"><div class="md-loading">Загрузка…</div></main>
+    </div>
+  </div>
+</div>
+<div id="md-modal-root"></div>
+<div class="md-toasts" id="md-toasts"></div>
+<script type="module">
+  import { Theme } from '/shared/theme.js';
+  import { Sidebar } from '/shared/sidebar.js';
+  Theme.mountToggle('#theme-toggle-slot');
+  Sidebar.mount('#uchet-sidebar', { active: 'masterdata' });
+</script>
+<script type="module" src="/md-assets/md-app.js"></script>
+</body>
+</html>
